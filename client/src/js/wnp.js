@@ -56,12 +56,6 @@ WNP.Init = function () {
         socket.emit("server-settings");
         socket.emit("devices-get");
     }, 500);
-
-    // Create random album intervals, every 3 minutes
-    WNP.s.rndAlbumArtUri = WNP.rndAlbumArt("fake-album-");
-    var rndAlbumInterval = setInterval(function () {
-        WNP.s.rndAlbumArtUri = WNP.rndAlbumArt("fake-album-");
-    }, 3 * 60 * 1000);
 };
 
 /**
@@ -529,15 +523,6 @@ WNP.setAlbumArt = function (imgUri) {
     console.log("WNP", "Set Album Art", imgUri);
     this.r.albumArt.src = imgUri;
     this.r.bgAlbumArtBlur.style.backgroundImage = "url('" + imgUri + "')";
-};
-
-/**
- * Come up with a random album art URI (locally from the img folder).
- * @param {string} prefix - The prefix for the album art URI, i.e. 'fake-album-'
- * @returns {string} An URI for album art
- */
-WNP.rndAlbumArt = function (prefix) {
-    return "./img/" + prefix + this.rndNumber(1, 16) + ".jpg";
 };
 
 /**

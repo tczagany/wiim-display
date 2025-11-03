@@ -1,0 +1,26 @@
+{
+  "name": "client",
+  "version": "1.6.4",
+  "description": "This folder contains all client related code.",
+  "source": "./src/index.html",
+  "scripts": {
+    "clean:parcel": "shx rm -rf .parcel-cache && shx rm -rf dist && mkdir dist",
+    "publish:public": "shx rm -rf ../server/public && shx cp -R ./dist ../server/public",
+    "copy:img": "shx cp -R ./src/img ./dist",
+    "init": "npm run clean:parcel && npm run copy:img",
+    "start": "npm run init && parcel ./src/*.html",
+    "build": "npm run init && parcel build ./src/*.html && npm run publish:public",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@parcel/optimizer-htmlnano": "^2.15.2",
+    "@parcel/packager-raw-url": "^2.11.0",
+    "@parcel/transformer-sass": "^2.11.0",
+    "@parcel/transformer-webmanifest": "^2.11.0",
+    "parcel": "^2.11.0",
+    "shx": "^0.4.0"
+  }
+}

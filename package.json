@@ -1,0 +1,33 @@
+{
+  "name": "wiim-now-playing",
+  "version": "1.6.4",
+  "description": "Show what the Wiim device is currently playing on a separate screen.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "nodemon",
+    "client-dev": "cd client && npm run start",
+    "client-build": "cd client && npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "debug": "^4.3.4",
+    "express": "^5.1.0",
+    "flipclock": "^1.0.1",
+    "node-ssdp": "^4.0.1",
+    "socket.io": "^4.7.4",
+    "upnp-device-client": "^1.0.2",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "server/*.json",
+      "client/**"
+    ]
+  }
+}

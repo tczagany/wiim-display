@@ -53,14 +53,12 @@ function msToTime(duration) {
  */
 const startState = (io, deviceInfo) => {
     log("Start polling for device state...");
-
     // Start immediately with polling device for state
     module.exports.updateDeviceState(io, deviceInfo);
     // Then set an interval to poll the device state regularly
     return setInterval(() => {
         module.exports.updateDeviceState(io, deviceInfo);
     }, 1000);
-
 }
 
 /**
@@ -71,7 +69,6 @@ const startState = (io, deviceInfo) => {
  */
 const startMetadata = (io, deviceInfo) => {
     log("Start polling for device metadata...");
-
     // Start immediately with polling device for metadata
     module.exports.updateDeviceMetadata(io, deviceInfo);
     // Then set an interval to poll the device metadata regularly

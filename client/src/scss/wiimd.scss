@@ -1,8 +1,8 @@
 /* ------------------------
- * WiiM Now Playing styling (SCSS)
+ * WiiM Display styling (SCSS)
  */
 
-/* WiiM Now Playing App */
+/* WiiM Display App */
 #wiimdApp {
     width: 100vw;
     height: 100vh;
@@ -110,6 +110,10 @@
                 margin-bottom: 15px;
                 filter: invert(1);
             }
+        }
+
+        #placeholder {
+            margin-top: 10%;
         }
 
         h1 {

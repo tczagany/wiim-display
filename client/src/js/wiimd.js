@@ -1,5 +1,5 @@
 // =======================================================
-// WiiM Now Playing
+// WiiM Display
 
 // Namespacing
 window.WIIM = window.WIIM || {};
@@ -583,5 +583,5 @@ WIIM.getQualityIdent = function (songQuality, songActualQuality, songBitrate, so
 };
 
 // =======================================================
-// Start WiiM Now Playing app
+// Start WiiM Display app
 WIIM.Init();

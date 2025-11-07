@@ -11,9 +11,7 @@ WIIM.s = {
     locPort: (location.port && location.port != "80" && location.port != "1234") ? location.port : "80",
     rndAlbumArtUri: "./img/fake-album-1.jpg",
     // Device selection
-    aDeviceUI: ["btnPrev", "btnPlay", "btnNext", "btnRefresh", "selDeviceChoices", "devName", "mediaTitle", "mediaSubTitle", "mediaArtist", "mediaAlbum", "mediaBitRate", "mediaBitDepth", "mediaSampleRate", "mediaQualityIdent", "devVol", "btnRepeat", "btnShuffle", "progressPlayed", "progressLeft", "progressPercent", "mediaSource", "albumArt", "bgAlbumArtBlur"],
-    // Server actions to be used in the app
-    aServerUI: ["btnReboot", "btnUpdate", "btnShutdown", "btnReloadUI", "sServerUrlHostname", "sServerUrlIP", "sServerVersion", "sClientVersion"],
+    aDeviceUI: ["devName", "mediaTitle", "mediaSubTitle", "mediaArtist", "mediaAlbum", "mediaBitRate", "mediaBitDepth", "mediaSampleRate", "mediaQualityIdent", "devVol", "progressPlayed", "progressLeft", "progressPercent", "mediaSource", "albumArt", "bgAlbumArtBlur"],
 };
 
 // Data placeholders.
@@ -48,9 +46,6 @@ WIIM.Init = function () {
     // Set Socket.IO definitions
     this.setSocketDefinitions();
 
-    // Set UI event listeners
-    this.setUIListeners();
-
     // Initial calls, wait a bit for socket to start
     setTimeout(() => {
         socket.emit("server-settings");
@@ -63,7 +58,7 @@ WIIM.Init = function () {
  * @returns {undefined}
  */
 WIIM.setUIReferences = function () {
-    console.log("WIIM", "Set UI references...")
+    console.log("WIIM", "Set UI references...");
 
     function addElementToRef(id) {
         const element = document.getElementById(id);
@@ -76,76 +71,6 @@ WIIM.setUIReferences = function () {
 
     // Set references to the UI elements
     this.s.aDeviceUI.forEach((id) => { addElementToRef(id); });
-    this.s.aServerUI.forEach((id) => { addElementToRef(id); });
-
-};
-
-/**
- * Setting the listeners on the UI elements of the app.
- * @returns {undefined}
- */
-WIIM.setUIListeners = function () {
-    console.log("WIIM", "Set UI Listeners...")
-
-    // ------------------------------------------------
-    // Player buttons
-
-    this.r.btnPrev.addEventListener("click", function () {
-        var wiimAction = this.getAttribute("wiim-action");
-        if (wiimAction) {
-            this.disabled = true;
-            socket.emit("device-action", wiimAction);
-        }
-    });
-
-    this.r.btnPlay.addEventListener("click", function () {
-        var wiimAction = this.getAttribute("wiim-action");
-        if (wiimAction) {
-            this.disabled = true;
-            socket.emit("device-action",wiimAction);
-        }
-    });
-
-    this.r.btnNext.addEventListener("click", function () {
-        varwiimAction = this.getAttribute("wiim-action");
-        if (wiimpAction) {
-            this.disabled = true;
-            socket.emit("device-action", wiimAction);
-        }
-    });
-
-    // ------------------------------------------------
-    // Settings buttons
-
-    this.r.btnRefresh.addEventListener("click", function () {
-        socket.emit("devices-refresh");
-        // Wait for discovery to finish
-        setTimeout(() => {
-            socket.emit("devices-get");
-            socket.emit("server-settings");
-        }, 5000);
-    });
-
-    this.r.selDeviceChoices.addEventListener("change", function () {
-        socket.emit("device-set", this.value);
-    });
-
-    this.r.btnReboot.addEventListener("click", function () {
-        socket.emit("server-reboot");
-    });
-
-    this.r.btnUpdate.addEventListener("click", function () {
-        socket.emit("server-update");
-    });
-
-    this.r.btnShutdown.addEventListener("click", function () {
-        socket.emit("server-shutdown");
-    });
-
-    this.r.btnReloadUI.addEventListener("click", function () {
-        location.reload();
-    });
-
 };
 
 /**
@@ -177,42 +102,9 @@ WIIM.setSocketDefinitions = function () {
 
         // Device transport state or play medium changed...?
         if (WIIM.d.prevTransportState !== msg.CurrentTransportState || WIIM.d.prevPlayMedium !== msg.PlayMedium) {
-            if (msg.CurrentTransportState === "TRANSITIONING") {
-                WIIM.r.btnPlay.children[0].className = "bi bi-circle-fill";
-                WIIM.r.btnPlay.disabled = true;
-            };
-            if (msg.CurrentTransportState === "PLAYING") {
-                // Radio live streams are preferrentialy stopped as pausing keeps cache for minutes/hours(?).
-                // Stop > Play resets the stream to 'now'. Pause works like 'live tv time shift'.
-                if (msg.PlayMedium && msg.PlayMedium === "RADIO-NETWORK") {
-                    WIIM.r.btnPlay.children[0].className = "bi bi-stop-circle-fill";
-                    WIIM.r.btnPlay.setAttribute("wiim-action", "Stop");
-                }
-                else {
-                    WIIM.r.btnPlay.children[0].className = "bi bi-pause-circle-fill";
-                    WIIM.r.btnPlay.setAttribute("wiim-action", "Pause");
-                }
-                WIIM.r.btnPlay.disabled = false;
-            }
-            else if (msg.CurrentTransportState === "PAUSED_PLAYBACK" || msg.CurrentTransportState === "STOPPED") {
-                WIIM.r.btnPlay.children[0].className = "bi bi-play-circle-fill";
-                WIIM.r.btnPlay.setAttribute("wiim-action", "Play");
-                WIIM.r.btnPlay.disabled = false;
-            };
             WIIM.d.prevTransportState = msg.CurrentTransportState; // Remember the last transport state
             WIIM.d.prevPlayMedium = msg.PlayMedium; // Remember the last PlayMedium
         }
-
-        // If internet radio, there is no skipping... just start and stop!
-        if (msg.PlayMedium && msg.PlayMedium === "RADIO-NETWORK") {
-            WIIM.r.btnPrev.disabled = true;
-            WIIM.r.btnNext.disabled = true;
-        }
-        else {
-            WIIM.r.btnPrev.disabled = false;
-            WIIM.r.btnNext.disabled = false;
-        }
-
     });
 
     // On metadata
@@ -301,12 +193,6 @@ WIIM.setSocketDefinitions = function () {
         socket.emit("server-settings");
         socket.emit("devices-get");
     });
-
-    // On device refresh
-    socket.on("devices-refresh", function (msg) {
-        WIIM.r.selDeviceChoices.innerHTML = "<option disabled=\"disabled\">Waiting for devices...</em></li>";
-    });
-
 };
 
 // =======================================================

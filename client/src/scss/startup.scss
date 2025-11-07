@@ -1,0 +1,12 @@
+#wiimStartup {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100%;
+    overflow: hidden;
+    background: rgb(1, 12, 18);
+    background: linear-gradient(0deg, rgba(1, 12, 18, 1) 0%, rgb(144, 74, 28) 50%, rgba(40, 67, 74, 1) 100%);
+
+    h1 {
+        font-size: calc(1.375rem + 1.7vw);
+    }
+}

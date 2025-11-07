@@ -56,9 +56,7 @@ let pollMetadata = null; // For the renderer metadata
 app.use(cors());
 // Reroute all clients to the /public folder
 app.use(express.static(__dirname + "/public"));
-app.get("/debug", function (req, res) {
-    res.sendFile(__dirname + "/public/index.html");
-});
+
 // Proxy https album art requests through this app, because this could be a https request with a self signed certificate.
 // If the device does not have a valid (self-signed) certificate the browser cannot load the album art, hence we ignore the self signed certificate.
 // TODO: Limit usage to only the devices we are connected to? Use CORS to limit access?

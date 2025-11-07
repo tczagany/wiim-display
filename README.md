@@ -8,4 +8,6 @@ Installation and first build:
 
    * the result is in the folder: server/public
 
+* From client: npm i flipclock
+
 * From root: node server/index.js

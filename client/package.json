@@ -22,5 +22,8 @@
     "@parcel/transformer-webmanifest": "^2.11.0",
     "parcel": "^2.11.0",
     "shx": "^0.4.0"
+  },
+  "dependencies": {
+    "flipclock": "^1.0.1"
   }
 }

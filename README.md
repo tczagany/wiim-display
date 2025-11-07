@@ -1,13 +1,11 @@
-Installation and first build:
+Installation and first build steps:
 
-* From root: npm install
+* From root folder: npm install
 
-* From client: npm install
+* From client folder: npm install
 
-* From client: npm run build
+* From client folder: npm run build
 
-   * the result is in the folder: server/public
+   * the result will be in the folder: server/public
 
-* From client: npm i flipclock
-
-* From root: node server/index.js
+* From root folder: node server/index.js

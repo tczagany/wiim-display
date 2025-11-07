@@ -4,11 +4,11 @@ body {
   overflow: hidden;
 }
 
-.countdown {
-  width: 100vv;
-  height: 100vh;
-  background: black;
-  transform: scale(2.2);
+.flipclock {
+  	width: 100vw;
+  	height: 100vh;
+  	background: black;
+  	transform: scale(2.2);
 	text-transform: lowercase;
 	display: flex;
 	justify-content: center;
@@ -17,7 +17,6 @@ body {
 		text-align: center;
 		position: relative;
 		font-family: PT Sans, sans-serif;
-		-webkit-user-select: none;
 		margin: 0;
 		width: 100%;
 		* {
@@ -210,12 +209,6 @@ body {
 					}
 				}
 			}
-			.flip-clock-label {
-				display: block;
-				margin-top: 5px;
-				font-size: 12px;
-				color: #474747;
-			}
 		}
 		&.clearfix {
 			&:after {
@@ -227,7 +220,6 @@ body {
 				content: " ";
 				display: table;
 			}
-			//*zoom: 1;
 		}
 	}
 }

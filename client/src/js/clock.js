@@ -1,12 +1,13 @@
 var clockMarginPercent = 10;
-var showSeconds = true;
+var showSeconds = false;
+
+var hours, minutes, seconds;
 var old_hours, old_minutes, old_seconds;
 
-if (showSeconds === false) {
-  document.getElementById("second-digits").outerHTML = "";
-}
-
-var x = setInterval(function() {
+function initClock() {
+  if (showSeconds === false) {
+    document.getElementById("second-digits").outerHTML = "";
+  }
 
   var frame = $('.flipclock');
   var clock = $('.flip-clock-wrapper');
@@ -14,9 +15,27 @@ var x = setInterval(function() {
   clock.css('transform', 'scale(' + factor + ')');
 
   var now = new Date(Date.now());
-  var hours = now.getHours();
-  var minutes = now.getMinutes();
-  var seconds = now.getSeconds();
+  old_hours = hours = now.getHours();
+  old_minutes = minutes = now.getMinutes();
+  old_seconds = seconds = now.getSeconds();
+
+  $('.flipclock .flip-hours .flip-clock-active .up .counter').text(('0' + (hours)).slice(-2));
+  $('.flipclock .flip-hours .flip-clock-active .down .counter').text(('0' + (hours)).slice(-2));
+
+  $('.flipclock .flip-minutes .flip-clock-active .up .counter').text(('0' + (minutes)).slice(-2));
+  $('.flipclock .flip-minutes .flip-clock-active .down .counter').text(('0' + (minutes)).slice(-2));
+
+  if (showSeconds === true) {
+    $('.flipclock .flip-seconds .flip-clock-active .up .counter').text(('0' + (seconds)).slice(-2));
+    $('.flipclock .flip-seconds .flip-clock-active .down .counter').text(('0' + (seconds)).slice(-2));
+  }
+}
+
+var x = setInterval(function() {
+  var now = new Date(Date.now());
+  hours = now.getHours();
+  minutes = now.getMinutes();
+  seconds = now.getSeconds();
 
   if(old_hours != hours)
     $('.flipclock .flip-hours').removeClass('play');
@@ -79,5 +98,6 @@ var x = setInterval(function() {
     old_seconds = seconds;
     clearInterval(y);
   }, 100);
-  
 }, 1000);
+
+initClock();

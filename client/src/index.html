@@ -4,18 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WiiM Display</title>
-    <link rel="stylesheet" href="./scss/main.scss">
+    <link rel="stylesheet" href="./scss/index.scss">
 </head>
 <body>
-    <iframe id="content-iframe" src="./clock.html" style="width: 100%; height: 100%; border: none; display: none;">
-    </iframe>
+    <div class="frame-view">
+        <iframe class="content-frame" id="content-a"></iframe>
+        <iframe class="content-frame" id="content-b"></iframe>
+    </div>
 
     <script>
-        //let contentUrl;
-        //contentUrl = '/wiimd.html';
-        const iframe = document.getElementById('content-iframe');
-        //iframe.src = contentUrl;
-        iframe.style.display = 'block';
+        var activeFrame = 'a';
+
+        function toogleIframe(newContent) {
+            var iframe;
+            if (activeFrame == 'a') {
+                iframea = document.getElementById('content-a');
+                iframeb = document.getElementById('content-b');
+                iframea.style.opacity = 0;
+                iframeb.style.opacity = 1;
+                iframeb.src = newContent;
+                activeFrame = 'b';
+            }
+            else if (activeFrame == 'b') {
+                iframea = document.getElementById('content-a');
+                iframeb = document.getElementById('content-b');
+                iframea.style.opacity = 1;
+                iframeb.style.opacity = 0;
+                iframea.src = newContent;
+                activeFrame = 'a';
+            }
+        }
+
+        window.setTimeout(function() {
+            toogleIframe('/clock.html');
+        }, 2000);
+
+        window.setInterval(function() {
+            console.log('Switching frames every 5 seconds');
+            if (activeFrame == 'a') {
+                toogleIframe('/clock.html');
+                console.log('clock');
+            } else {
+                toogleIframe('/wiimd.html');
+                console.log('wiimd');
+            }
+        }, 5000);
     </script>
 </body>
 </html>

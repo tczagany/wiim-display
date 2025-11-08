@@ -1,0 +1,33 @@
+html {
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-color: black;
+}
+
+body {
+    width: 90%;
+    height: 80%;
+    margin-top: 5%;
+    margin-left: 5%;
+    background-color: black;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.frame-view {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.content-frame {
+  grid-row-start: 1;
+  grid-column-start: 1;
+  height: 100%;
+  width: 100%;
+  border: none;
+  opacity: 0; // Adjusted by js code
+  transition: opacity 1.5s ease-in-out;
+}

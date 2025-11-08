@@ -11,44 +11,6 @@
         <iframe class="content-frame" id="content-a"></iframe>
         <iframe class="content-frame" id="content-b"></iframe>
     </div>
-
-    <script>
-        var activeFrame = 'a';
-
-        function toogleIframe(newContent) {
-            var iframe;
-            if (activeFrame == 'a') {
-                iframea = document.getElementById('content-a');
-                iframeb = document.getElementById('content-b');
-                iframea.style.opacity = 0;
-                iframeb.style.opacity = 1;
-                iframeb.src = newContent;
-                activeFrame = 'b';
-            }
-            else if (activeFrame == 'b') {
-                iframea = document.getElementById('content-a');
-                iframeb = document.getElementById('content-b');
-                iframea.style.opacity = 1;
-                iframeb.style.opacity = 0;
-                iframea.src = newContent;
-                activeFrame = 'a';
-            }
-        }
-
-        window.setTimeout(function() {
-            toogleIframe('/clock.html');
-        }, 2000);
-
-        window.setInterval(function() {
-            console.log('Switching frames every 5 seconds');
-            if (activeFrame == 'a') {
-                toogleIframe('/clock.html');
-                console.log('clock');
-            } else {
-                toogleIframe('/wiimd.html');
-                console.log('wiimd');
-            }
-        }, 5000);
-    </script>
+    <script type="module" src="js/index.js"></script>
 </body>
 </html>

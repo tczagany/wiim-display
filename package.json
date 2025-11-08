@@ -15,7 +15,6 @@
   "dependencies": {
     "debug": "^4.3.4",
     "express": "^5.1.0",
-    "flipclock": "^1.0.1",
     "node-ssdp": "^4.0.1",
     "socket.io": "^4.7.4",
     "upnp-device-client": "^1.0.2",

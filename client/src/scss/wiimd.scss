@@ -11,19 +11,15 @@
     background: rgb(1, 12, 18);
     background: linear-gradient(0deg, rgba(1, 12, 18, 1) 0%, rgba(3, 53, 54, 1) 50%, rgba(40, 67, 74, 1) 100%);
 
-    // ===============================
-    // Default CSS Grid - mobile first strategy
-    // Mobile portrait mode as default
     .wiimdContainer {
         display: grid;
-        grid-template-columns: 1fr;
-        grid-template-rows: 1.4fr .6fr 120px;
+        grid-template-columns: .95fr 1.05fr;
+        grid-template-rows: 1fr 105px;
+        grid-template-areas:
+            "wiimdAlbumArt wiimdMediaInfo"
+            "wiimdFooter wiimdFooter";
         gap: 0px 0px;
         grid-auto-flow: row;
-        grid-template-areas:
-            "wiimdAlbumArt"
-            "wiimdMediaInfo"
-            "wiimdFooter";
 
         position: absolute;
         top: 0;
@@ -34,10 +30,8 @@
         color: #fff;
     }
 
-    /* CSS Grid areas - mobile first */
     .wiimdAlbumArt {
         grid-area: wiimdAlbumArt;
-        padding: 40px 24px 16px 24px;
         text-align: center;
         overflow: hidden;
     }
@@ -52,12 +46,10 @@
         padding: 0 24px;
     }
 
-    // Default overrides
     .text-secondary {
         color: rgba(179, 189, 186, 1) !important;
     }
 
-    /* Background Album Art */
     #wiimdBgAlbumArt {
         position: absolute;
         top: 0;
@@ -68,19 +60,15 @@
 
         #bgAlbumArtBlur {
             height: 100%;
-            /* Center and scale the image nicely */
             background-image: url("../img/fake-album-1.jpg");
             background-position: center;
             background-repeat: no-repeat;
             background-size: cover;
-            /* Add the blur effect */
             filter: blur(12px) brightness(.6) opacity(0.6);
-            /* Zoom in */
             transform: scale(1.25);
         }
     }
 
-    /* Album Art contents */
     .wiimdAlbumArt {
         > div {
             display: flex;
@@ -97,16 +85,14 @@
         }
     }
 
-    /* Media info contents */
     .wiimdMediaInfo {
         text-shadow: 3px 3px 8px rgba(0, 0, 0, .75);
 
-        // Media Source Ident
         #mediaSource {
             text-align: right;
             img {
-                max-height: 24px;
-                margin-bottom: 15px;
+                max-height: 30px;
+                margin: 15px;
                 filter: invert(1);
             }
         }
@@ -141,7 +127,6 @@
             font-size: calc(.875rem + .3vw);
         }
 
-        // Media Album and Quality Ident
         #mediaAlbumIdent,
         #mediaQualityIdent {
             &.badge-outlined {
@@ -152,7 +137,6 @@
         }
     }
 
-    /* Footer contents */
     .wiimdFooter {
         #progressPercent {
             height: 2px;
@@ -172,84 +156,6 @@
             bottom: 30px;
             text-align: right;
             font-size: calc(.875rem + .3vw);
-        }
-    }
-
-    // ===============================
-    // Responsive layout changes
-
-    // Small devices (landscape phones, 576px and up)
-    @media (min-width: 576px) and (orientation: landscape) {
-        .wiimdContainer {
-            grid-template-columns: .65fr 1.35fr;
-            grid-template-rows: 1fr 105px;
-            grid-template-areas:
-                "wiimdAlbumArt wiimdMediaInfo"
-                "wiimdFooter wiimdFooter";
-        }
-
-        /* CSS Grid areas - mobile first */
-        .wiimdAlbumArt {
-            padding: 24px 24px 16px 24px;
-        }
-
-        .wiimdMediaInfo {
-            padding: 24px 24px 24px 0;
-        }
-
-        .wiimdFooter {
-            padding: 0 24px;
-            .btn-group.primary {
-                margin-top: 5px;
-            }
-        }
-    }
-
-    // Medium devices (tablets, 768px and up)
-    @media (min-width: 768px) and (orientation: landscape) {
-        .wiimdContainer {
-            grid-template-columns: .95fr 1.05fr;
-            grid-template-rows: 1fr 105px;
-        }
-
-        /* Media info contents */
-        .wiimdMediaInfo {
-            #mediaSource {
-                img {
-                    max-height: 28px;
-                }
-            }
-        }
-
-        /* Footer contents */
-        .wiimdFooter {
-            .btn-group.primary {
-                margin-top: 2px;
-            }
-        }
-    }
-
-    // Large devices (desktops/tablets, 992px and up)
-    @media (min-width: 992px) and (orientation: landscape) {
-        /* Media info contents */
-        .wiimdMediaInfo {
-            #mediaSource {
-                img {
-                    max-height: 30px;
-                }
-            }
-        }
-    }
-
-    // X-Large devices (large desktops, 1200px and up)
-    @media (min-width: 1200px) and (orientation: landscape) {
-        /* Media info contents */
-        .wiimdMediaInfo {
-            #mediaSource {
-                img {
-                    max-height: 32px;
-                }
-            }
         }
     }
 }

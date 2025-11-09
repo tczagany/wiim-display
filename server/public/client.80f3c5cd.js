@@ -1,0 +1,2 @@
+window.App=window.App||{},App.activeFrame="a",App.toogleIframe=function(t){var e,n;"a"==this.activeFrame?(e=document.getElementById("content-a"),n=document.getElementById("content-b"),e.style.opacity=0,n.style.opacity=1,n.src=t,this.activeFrame="b"):"b"==this.activeFrame&&(e=document.getElementById("content-a"),n=document.getElementById("content-b"),e.style.opacity=1,n.style.opacity=0,e.src=t,this.activeFrame="a")},App.init=function(){setTimeout(function(){App.toogleIframe("/wiimd.html")},2e3)},App.init();
+//# sourceMappingURL=client.80f3c5cd.js.map

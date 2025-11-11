@@ -28,13 +28,13 @@ App.init = function() {
       App.toogleIframe('/wiimd.html');
   }, 2000);
 
-  //setInterval(function() {
-  //    if (App.activeFrame == 'a') {
-  //        App.toogleIframe('/clock.html');
-  //    } else {
-  //        App.toogleIframe('/wiimd.html');
-  //    }
-  //}, 5000);
+  setInterval(function() {
+    if (App.activeFrame == 'a') {
+        App.toogleIframe('/clock.html');
+    } else {
+        App.toogleIframe('/wiimd.html');
+    }
+  }, 5000);
 }
 
 App.init();

@@ -1,1 +1,4 @@
-{"selectedDevice":{"friendlyName":null,"manufacturer":null,"modelName":null,"location":null,"actions":null}}
+{
+    "wiim-device":{"address":"192.168.1.10"},
+    "display-server":{"address":"192.168.1.10","port":8080}
+}

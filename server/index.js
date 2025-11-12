@@ -70,6 +70,26 @@ app.get("/proxy", function (req, res) {
     });
 });
 
+const getSettings = (serverSettings) => {
+    try {
+        let settings = fs.readFileSync(settingsFile);
+        settings = JSON.parse(settings);
+        if (!settings.selectedDevice || !settings.selectedDevice.location) { // Short sanity check
+            log("fs", "Previous selected device not stored correctly or invalid.");
+            log("fs", "The file exists though. Silently ignoring, will be overwritten eventually...");
+        }
+        else {
+            log("fs", "selectedDevice:", settings.selectedDevice.friendlyName, settings.selectedDevice.location);
+            log("fs", "Amend the current server settings with the stored values.");
+            serverSettings.selectedDevice = settings.selectedDevice;
+        }
+    }
+    catch { // Not found, create a settings file
+        log("fs", "No settings file found! Trying to create one...");
+        module.exports.saveSettings(serverSettings);
+    }
+}
+
 // ===========================================================================
 // Socket.io definitions
 

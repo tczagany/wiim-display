@@ -1,7 +1,7 @@
 # Static 'now playing' display for WiiM streamers
 
-This is for you if you would reuse your old android tablet or phone as a display of your WiiM streamer and you are not an experienced html, css, and nodejs developer.  
-The display based on the great https://github.com/cvdlinden/wiim-now-playing repository by cvdlind. This solution is much more simpler, there is no uPnP and SSDP support so the device ip address must be selected manually. The layout is not responsive and also much more simpler. My solution uses the official WiiM API to gather the necessary playing info. (https://www.wiimhome.com/pdf/HTTP%20API%20for%20WiiM%20Products.pdf)
+This is a hobby project and this is for you if you would like to reuse your old android tablet or phone as a display of your WiiM streamer and you are not an experienced html, css, and nodejs developer like me.  
+The solution based on the https://github.com/cvdlinden/wiim-now-playing repository by cvdlind. This display is much more simpler, there is no uPnP and SSDP support so the device ip address must be setup manually. The layout is not responsive and also much more simpler. My solution uses the official WiiM API to gather the necessary playing info. (https://www.wiimhome.com/pdf/HTTP%20API%20for%20WiiM%20Products.pdf)
 
 Typical WiiM content:
 ![](assets/wiimd.png)
@@ -113,8 +113,8 @@ nano wiim-display-autostart.sh
 
 * Deactivate any screen lock to enable the auto starting
 
-After the setup procedure power off and disconnect the phone from the pc, put the phone on a wall charger and press the power button. All the other tricks must be done automatically.
-If disconnect or power down the charger the phone must go in sleep mode until it gets power again.
+After the setup procedure, power off and disconnect the phone from the pc, put the phone on a wall charger and press the power button. All the other tricks must be done automatically.
+If the phone loses power, it will go into sleep mode until power is restored.
 
 # Development
 ## Build steps

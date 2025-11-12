@@ -1,5 +1,29 @@
+# Simple static 'now playing' display for Wiim streamers
+
+This WiiM display solution based on the great https://github.com/cvdlinden/wiim-now-playing repository by cvdlind. My display is much more simpler, there is no uPnP and SSDP support so the device ip address must be set manually. The layout is not responsive and also much more simpler. My solution uses the official WiiM API to gather the necessary playing info.
+
+## Features:
+* album cover handling
+* album, title, artist display
+* progress bar for the current playing position
+* volume and device name display
+* content source icons (tidal, spotify, etc.)
+* browser based solution for the wide device support (pc, android phone, respberry, tablets)
+* over the air config capability
+* auto start and auto full screen mode on android
+* screen brightness control on android
+* management for different player states
+* fade in/out between the different display states 
+* flip clock support for the inactive periods
+
+Typical wiim content:
+![](resources/wiimd.png)
+
+The flip clock
+![](resources/clock.png)
+
 ## Prerequisites on Linux/Windows:
-* Git, NodeJs, Npm, Perl, VSCode (opt.)
+* Git, NodeJs, Npm, Perl, Android Debug Bridge ADB, VSCode (opt.)
 
 ## Prerequisites on Android 8 (Oreo) and above:
 * Android: F-Droid, Termux, Termux:boot, Fully Kiosk Browser
@@ -60,10 +84,8 @@
     * Sleep on power disconnect = true
 
 * Deactivate any screen lock to enable the auto starting
- 
-# Usage on Android
 
-Put the phone on a wall charger and press the power button. All the other tricks must be done automatically.
+After the setup procedure power off and disconnect the phone from the pc, put the phone on a wall charger and press the power button. All the other tricks must be done automatically.
 If disconnect or power down the charger the phone must go in sleep mode until it gets power again.
 
 Installation and first build steps:

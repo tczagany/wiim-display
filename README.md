@@ -1,12 +1,13 @@
 # Static 'now playing' display for WiiM streamers
 
-This WiiM display based on the great https://github.com/cvdlinden/wiim-now-playing repository by cvdlind. My display is much more simpler, there is no uPnP and SSDP support so the device ip address must be set manually. The layout is not responsive and also much more simpler. My solution uses the official WiiM API to gather the necessary playing info. (https://www.wiimhome.com/pdf/HTTP%20API%20for%20WiiM%20Products.pdf)
+This is for you if you would reuse your old android tablet or phone as a display of your WiiM streamer and you are not an experienced html, css, and nodejs developer.  
+The display based on the great https://github.com/cvdlinden/wiim-now-playing repository by cvdlind. This solution is much more simpler, there is no uPnP and SSDP support so the device ip address must be selected manually. The layout is not responsive and also much more simpler. My solution uses the official WiiM API to gather the necessary playing info. (https://www.wiimhome.com/pdf/HTTP%20API%20for%20WiiM%20Products.pdf)
 
 Typical WiiM content:
-![](resources/wiimd.png)
+![](assets/wiimd.png)
 
 The flip clock
-![](resources/clock.png)
+![](assets/clock.png)
 
 ## Features:
 * album cover handling
@@ -18,9 +19,10 @@ The flip clock
 * over the air config capability
 * auto start and auto full screen mode on android
 * screen brightness control on android
+* configurable margins to reduce the visible surface
 * management for different player states
 * fade in/out between the different display states 
-* flip clock support for the inactive periods
+* flip clock support
 
 # Easiest way to test the stuff (just run it here and now)
 
@@ -43,7 +45,10 @@ git clone https://github.com/tczagany/wiim-display.git
 cd wiim-display
 npm install
 node server/index.js
+> Web Server started at http://localhost:8080
 ```
+
+Open the following site from any web browser: http://localhost:8080
 
 ## Prerequisites on Linux/Windows:
 * Git, NodeJs, Npm, Android Debug Bridge ADB (opt.), VSCode (opt.)

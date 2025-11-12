@@ -1,14 +1,20 @@
-# Simple static 'now playing' display for Wiim streamers
+# Static 'now playing' display for WiiM streamers
 
-This WiiM display solution based on the great https://github.com/cvdlinden/wiim-now-playing repository by cvdlind. My display is much more simpler, there is no uPnP and SSDP support so the device ip address must be set manually. The layout is not responsive and also much more simpler. My solution uses the official WiiM API to gather the necessary playing info.
+This WiiM display based on the great https://github.com/cvdlinden/wiim-now-playing repository by cvdlind. My display is much more simpler, there is no uPnP and SSDP support so the device ip address must be set manually. The layout is not responsive and also much more simpler. My solution uses the official WiiM API to gather the necessary playing info. (https://www.wiimhome.com/pdf/HTTP%20API%20for%20WiiM%20Products.pdf)
+
+Typical WiiM content:
+![](resources/wiimd.png)
+
+The flip clock
+![](resources/clock.png)
 
 ## Features:
 * album cover handling
-* album, title, artist display
+* album, title, subtitle and artist display
 * progress bar for the current playing position
 * volume and device name display
 * content source icons (tidal, spotify, etc.)
-* browser based solution for the wide device support (pc, android phone, respberry, tablets)
+* html based solution, available on pc, tablets, phones, raspberry
 * over the air config capability
 * auto start and auto full screen mode on android
 * screen brightness control on android
@@ -16,14 +22,31 @@ This WiiM display solution based on the great https://github.com/cvdlinden/wiim-
 * fade in/out between the different display states 
 * flip clock support for the inactive periods
 
-Typical wiim content:
-![](resources/wiimd.png)
+# Easiest way to test the stuff (just run it here and now)
 
-The flip clock
-![](resources/clock.png)
+Test the prerequisites:  
+Open a bash or a power shell window and type the followings:
+```
+git -v
+> git version 2.51.1.windows.1
+node -v 
+> v22.20.0
+npm -v
+> 10.9.3
+```
+
+The version numbers must be the same or higher then the above ones.
+
+Install and run the WiiM display:
+```
+git clone https://github.com/tczagany/wiim-display.git
+cd wiim-display
+npm install
+node server/index.js
+```
 
 ## Prerequisites on Linux/Windows:
-* Git, NodeJs, Npm, Perl, Android Debug Bridge ADB, VSCode (opt.)
+* Git, NodeJs, Npm, Android Debug Bridge ADB (opt.), VSCode (opt.)
 
 ## Prerequisites on Android 8 (Oreo) and above:
 * Android: F-Droid, Termux, Termux:boot, Fully Kiosk Browser
@@ -38,35 +61,35 @@ The flip clock
   * Install Fully Kiosk Browser from Play Store
 
 * Start the termux console
-* Clone Wiim-Display to your home directory
-> git clone https://github.com/tczagany/wiim-display.git
+* Clone WiiM-Display to your home directory
+```
+git clone https://github.com/tczagany/wiim-display.git
+```
 * Install the project dependencies
-> cd wiim-display
-> 
-> npm install
+```
+cd wiim-display
+npm install
+```
 
 ## Setup on Android
 
 * Start the termux:boot app
 * Start the termux console
 * Start the wiim-display server
-> cd ~/wiim-display
-> 
-> node server/index.js
-
+```
+cd ~/wiim-display
+node server/index.js
+```
 * Setup autostart for the server
-> cd ~/.termx
->
-> mkdir boot
->
-> cd boot
->
-> nano wiim-display-autostart.sh
->
+```
+cd ~/.termx
+mkdir bootcd boot
+nano wiim-display-autostart.sh
 > in nano:
->> termux-wake-lock
->>
->> node ~/wiim-display/server/index.js 
+> termux-wake-lock
+> node ~/wiim-display/server/index.js
+> Ctrl-s; Ctrl-x
+```
 
 * Start the Fully Kiosk Browser app
   * Enter into the settings menu (left swipe)
@@ -88,14 +111,16 @@ The flip clock
 After the setup procedure power off and disconnect the phone from the pc, put the phone on a wall charger and press the power button. All the other tricks must be done automatically.
 If disconnect or power down the charger the phone must go in sleep mode until it gets power again.
 
-Installation and first build steps:
+# Development
+## Build steps
+```
+git clone https://github.com/tczagany/wiim-display.git
+cd wiim-display
+npm install
+cd client
+npm install
+npm run build
+cd ..
+node server/index.js
+```
 
-* From root folder: npm install
-
-* From client folder: npm install
-
-* From client folder: npm run build
-
-   * the result will be in the folder: server/public
-
-* From root folder: node server/index.js

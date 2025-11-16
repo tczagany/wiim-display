@@ -9,7 +9,7 @@
 
 const https = require("https");
 const xml2js = require("xml2js");
-const lib = require("./lib.js"); // Generic functionality
+const lib = require("./lib.js");
 const log = require("debug")("lib:wiimapi");
 
 function getJsonFromHttps(url, callback) {

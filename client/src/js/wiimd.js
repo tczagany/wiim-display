@@ -186,13 +186,6 @@ WIIM.setSocketDefinitions = function () {
         // Device volume
         WIIM.r.devVol.innerText = msg.CurrentVolume ? msg.CurrentVolume : "-";
     });
-
-    // On device set
-    socket.on("device-set", function (msg) {
-        // Device switch? Fetch settings and device info again.
-        socket.emit("server-settings");
-        socket.emit("devices-get");
-    });
 };
 
 // =======================================================

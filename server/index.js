@@ -9,8 +9,10 @@ const cors = require("cors");
 const app = express();
 
 // Node.js modules
+const fs = require("fs");
 const http = require("http");
 const https = require("https");
+const log = require("debug")("app");
 const server = http.createServer(app);
 
 // Socket.io modules, with CORS
@@ -25,20 +27,16 @@ const io = new Server(server, {
 // Other (custom) modules
 const wiimAPI = require("./lib/wiim.js"); // WIIM api functionality
 const lib = require("./lib/lib.js"); // Generic functionality
-const log = require("debug")("index"); // See README.md on debugging
 
 // For versionioning purposes
 // Load the package.json files to get the version numbers
 const packageJsonServer = require('../package.json'); // Server package.json
 const packageJsonClient = require('../client/package.json'); // Client package.json
+const { exit } = require("process");
+const { Console } = require("console");
 
 // ===========================================================================
 // Server constants & variables
-
-// Port 80 is the default www port, if the server won't start then choose another port i.e. 3000, 8000, 8080
-// Use PORT environment variable or default to 80
-log("process.env.PORT:", process.env.PORT);
-const port = process.env.PORT || 8080;
 
 // Server side placeholders for data:
 let deviceInfo = { // Placeholder for the currently selected device info
@@ -57,11 +55,14 @@ app.use(cors());
 // Reroute all clients to the /public folder
 app.use(express.static(__dirname + "/public"));
 
+// Load server settings
+let serverSettings = lib.loadSettings();
+
 // Proxy https album art requests through this app, because this could be a https request with a self signed certificate.
 // If the device does not have a valid (self-signed) certificate the browser cannot load the album art, hence we ignore the self signed certificate.
 // TODO: Limit usage to only the devices we are connected to? Use CORS to limit access?
 app.get("/proxy", function (req, res) {
-    log("Album Art Proxy request:", req.query.url, req.query.ts);
+    console.log("Srv", "Album Art Proxy request:", req.query.url, req.query.ts);
     const options = {
         rejectUnauthorized: false, // Ignore self-signed certificate
     };
@@ -70,25 +71,28 @@ app.get("/proxy", function (req, res) {
     });
 });
 
-const getSettings = (serverSettings) => {
-    try {
-        let settings = fs.readFileSync(settingsFile);
-        settings = JSON.parse(settings);
-        if (!settings.selectedDevice || !settings.selectedDevice.location) { // Short sanity check
-            log("fs", "Previous selected device not stored correctly or invalid.");
-            log("fs", "The file exists though. Silently ignoring, will be overwritten eventually...");
-        }
-        else {
-            log("fs", "selectedDevice:", settings.selectedDevice.friendlyName, settings.selectedDevice.location);
-            log("fs", "Amend the current server settings with the stored values.");
-            serverSettings.selectedDevice = settings.selectedDevice;
+app.get("/jsonrpc", function (req, res) {
+    if (req.query["json"] !== undefined) {
+        let jsonObj = JSON.parse(req.query["json"].replaceAll("'", "\""));
+        if (jsonObj["jsonrpc"] == "2.0" && jsonObj["method"] !== undefined) {
+            console.log("Srv", "JSON-RPC method: ", jsonObj["method"], " params: ", jsonObj["params"]);
+            let handlerName = "jsonRPC_" + jsonObj["method"];
+            if (Reflect.has(lib, handlerName)) {
+                try {
+                    let result = lib[handlerName](io, jsonObj["params"]);
+                    res.send(result.content, result.code);
+                    return;
+                } catch (error) {
+                    console.log("Srv", "Error processing JSON-RPC command:", error);
+                    res.send("Error processing JSON-RPC command: " + error, 500);
+                    return;
+                }
+            }
         }
     }
-    catch { // Not found, create a settings file
-        log("fs", "No settings file found! Trying to create one...");
-        module.exports.saveSettings(serverSettings);
-    }
-}
+    console.log("Srv", "Malformed or unknown JSON-RPC command received! ", req.query);
+    res.send("Malformed or unknown JSON-RPC command received!", 400);
+});
 
 // ===========================================================================
 // Socket.io definitions
@@ -99,11 +103,11 @@ const getSettings = (serverSettings) => {
  * @returns {undefined}
  */
 io.on("connection", (socket) => {
-    log("Client connected");
+    console.log("Srv", "Client connected");
 
     // On connection check if this is the first client to connect.
     // If so, start polling the device and streaming to the device(s).
-    log("No. of sockets:", io.sockets.sockets.size);
+    console.log("Srv", "No. of sockets:", io.sockets.sockets.size);
     if (io.sockets.sockets.size === 1) {
         // Start polling the selected device
         pollMetadata = wiimAPI.startMetadata(io, deviceInfo);
@@ -120,13 +124,13 @@ io.on("connection", (socket) => {
      * @returns {undefined}
      */
     socket.on("disconnect", () => {
-        log("Client disconnected");
+        console.log("Srv", "Client disconnected");
 
         // On disconnection we check the amount of connected clients.
         // If there is none, the streaming and polling are stopped.
-        log("No. of sockets:", io.sockets.sockets.size);
+        console.log("Srv", "No. of sockets:", io.sockets.sockets.size);
         if (io.sockets.sockets.size === 0) {
-            log("No sockets are connected!");
+            console.log("Srv", "No sockets are connected!");
             // Stop polling the selected device
             wiimAPI.stopPolling(pollState, "pollState");
             wiimAPI.stopPolling(pollMetadata, "pollMetadata");
@@ -139,12 +143,16 @@ io.on("connection", (socket) => {
      * @returns {undefined}
      */
     socket.on("device-action", (msg) => {
-        log("Socket event", "device-action", msg);
+        console.log("Srv", "device-action", msg);
         wiimAPI.callDeviceAction(io, msg, deviceInfo);
     });
 });
 
 // Start the webserver and listen for traffic
-server.listen(port, () => {
-    console.log("Web Server started at http://localhost:%s", server.address().port);
-});
+let port = serverSettings["display-server"]["port"];
+let address = serverSettings["display-server"]["address"];
+server.listen(port, address, () => {
+    console.log("Srv", "Web Server started at ",
+        server.address().address, server.address().port);
+    }
+);

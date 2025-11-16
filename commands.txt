@@ -1,0 +1,17 @@
+# Set setting
+curl "http://127.0.0.1:8080/jsonrpc?json={'jsonrpc':'2.0','method':'SetSetting','params':['streamer-device.address','192.168.1.3'],'id':1}"
+
+# Get setting
+curl "http://127.0.0.1:8080/jsonrpc?json={'jsonrpc':'2.0','method':'GetSetting','params':['streamer-device.address'],'id':1}"
+
+# Switch to the WiiM display page
+curl "http://127.0.0.1:8080/jsonrpc?json={'jsonrpc':'2.0','method':'SelectPage','params':['wiimd.html'],'id':1}"
+
+# Switch to the clock page
+curl "http://127.0.0.1:8080/jsonrpc?json={'jsonrpc':'2.0','method':'SelectPage','params':['clock.html'],'id':1}"
+
+# Switch to the startup page
+curl "http://127.0.0.1:8080/jsonrpc?json={'jsonrpc':'2.0','method':'SelectPage','params':['startup.html'],'id':1}"
+
+# Switch to the shutdown page
+curl "http://127.0.0.1:8080/jsonrpc?json={'jsonrpc':'2.0','method':'SelectPage','params':['shutdown.html'],'id':1}"

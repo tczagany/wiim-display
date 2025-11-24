@@ -36,9 +36,8 @@ WIIM.r = {};
 WIIM.Init = function () {
     console.log("WIIM", "Initialising...");
 
-    // Init Socket.IO, connect to port where server resides
-    console.log("WIIM DEBUG", "Listening on " + this.s.locHostname + ":" + this.s.locPort)
-    window.socket = io.connect(":" + this.s.locPort);
+    window.socket = parent.socket;
+    console.log("WIIM", "Socket", window.socket);
 
     // Set references to the UI elements
     this.setUIReferences();
@@ -80,6 +79,34 @@ WIIM.setUIReferences = function () {
 WIIM.setSocketDefinitions = function () {
     console.log("WIIM", "Setting Socket definitions...")
 
+    socket.on("device-activated", function (state) {
+    });
+
+    socket.on("device-state", function (state) {
+        WIIM.r.devVol.innerText = state.volume;
+        WIIM.r.devName.innerText = state.name + ' / ' + state.model;
+        if (state.mute === '1')
+            WIIM.r.devVol.innerText = "mute";
+    });
+
+    socket.on("album-changed", function (state) {
+        if (state.albumArt) {
+            var albumArtUri = WIIM.checkAlbumArtURI(state.albumArt);
+            WIIM.setAlbumArt(albumArtUri);
+        }
+        else {
+            WIIM.setAlbumArt("./img/fake-album-1.jpg");
+        }
+    });
+
+    socket.on("track-progress", function (state) {
+        var playerProgress = WIIM.getPlayerProgress(state.trackPos / 1000, state.trackLen / 1000, state.state);
+        progressPlayed.children[0].innerText = playerProgress.played;
+        progressLeft.children[0].innerText = (playerProgress.left != "") ? "-" + playerProgress.left : "";
+        progressPercent.setAttribute("aria-valuenow", playerProgress.percent)
+        progressPercent.children[0].setAttribute("style", "width:" + playerProgress.percent + "%");
+    });
+
     // On state
     socket.on("state", function (msg) {
         if (!msg) { return false; }
@@ -99,12 +126,6 @@ WIIM.setSocketDefinitions = function () {
         progressLeft.children[0].innerText = (playerProgress.left != "") ? "-" + playerProgress.left : "";
         progressPercent.setAttribute("aria-valuenow", playerProgress.percent)
         progressPercent.children[0].setAttribute("style", "width:" + playerProgress.percent + "%");
-
-        // Device transport state or play medium changed...?
-        if (WIIM.d.prevTransportState !== msg.CurrentTransportState || WIIM.d.prevPlayMedium !== msg.PlayMedium) {
-            WIIM.d.prevTransportState = msg.CurrentTransportState; // Remember the last transport state
-            WIIM.d.prevPlayMedium = msg.PlayMedium; // Remember the last PlayMedium
-        }
     });
 
     // On metadata
@@ -190,31 +211,22 @@ WIIM.setSocketDefinitions = function () {
 
 // =======================================================
 // Helper functions
-
-/**
- * Get player progress helper.
- * @param {string} relTime - Time elapsed while playing, format 00:00:00
- * @param {string} trackDuration - Total play time, format 00:00:00
- * @param {integer} timeStampDiff - Possible play time offset in seconds
- * @param {string} currentTransportState - The current transport state "PLAYING" or otherwise
- * @returns {object} An object with corrected played, left, total and percentage played
- */
-WIIM.getPlayerProgress = function (relTime, trackDuration, timeStampDiff, currentTransportState) {
-    var relTimeSec = this.convertToSeconds(relTime) + timeStampDiff;
-    var trackDurationSec = this.convertToSeconds(trackDuration);
-    if (trackDurationSec > 0 && relTimeSec < trackDurationSec) {
-        // var percentPlayed = Math.floor((relTimeSec / trackDurationSec) * 100);
-        var percentPlayed = ((relTimeSec / trackDurationSec) * 100).toFixed(1);
+WIIM.getPlayerProgress = function (trackPos, trackDuration, currentTransportState) {
+    if (trackDuration > 0 && trackPos < trackDuration) {
+        var percentPlayed = ((trackPos / trackDuration) * 100).toFixed(1);
+        var playedValue = WIIM.convertToMinutes(trackPos);
+        if (currentTransportState == "paused")
+            playedValue = "Paused " + playedValue;
         return {
-            played: WIIM.convertToMinutes(relTimeSec),
-            left: WIIM.convertToMinutes(trackDurationSec - relTimeSec),
-            total: WIIM.convertToMinutes(trackDurationSec),
+            played: playedValue,
+            left: WIIM.convertToMinutes(trackDuration - trackPos),
+            total: WIIM.convertToMinutes(trackDuration),
             percent: percentPlayed
         };
     }
-    else if (trackDurationSec == 0 && currentTransportState == "PLAYING") {
+    else if (trackDuration == 0 && currentTransportState == "playing") {
         return {
-            played: "Live",
+            played: "Live Stream",
             left: "",
             total: "",
             percent: 100
@@ -222,7 +234,7 @@ WIIM.getPlayerProgress = function (relTime, trackDuration, timeStampDiff, curren
     }
     else {
         return {
-            played: "Paused",
+            played: currentTransportState,
             left: "",
             total: "",
             percent: 0
@@ -236,6 +248,8 @@ WIIM.getPlayerProgress = function (relTime, trackDuration, timeStampDiff, curren
  * @returns {integer} The number of seconds that the string represents.
  */
 WIIM.convertToSeconds = function (sDuration) {
+    if (sDuration === undefined || sDuration === "0")
+        return 0;
     const timeSections = sDuration.split(":");
     let totalSeconds = 0;
     for (let i = 0; i < timeSections.length; i++) {

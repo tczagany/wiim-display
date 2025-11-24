@@ -1,43 +1,52 @@
-// ===========================================================================
-// lib.js
-
-/**
- * Custom functionality module.
- * Contains generic functions to aid the server app.
- * @module
- */
-
-// Other modules
 const os = require("os");
 const fs = require("fs");
-const log = require("debug")("lib:lib");
 
-// Module constants
+let settings = {};
 const settingsFile = __dirname + "/../../settings.json"; // Make absolute path to server folder
 
-/**
- * This function provides the current date and time in UTC format.
- * @returns {string} The date in UTC format.
- */
+const defaultStreamInfo = {
+    state: "", // "loading", "playing", "paused", "stopped"
+    source: "", // "bt", "aux", "sdcard", "usbdisk", "network", "linein", "optin", "airplay", "chromecast", "dlna"
+    vendor: "", // "wiim", "spotify", "tidal", "deezer", "amazon", "apple", "tunein", "youtube", "other"
+    vendorCategory: "", // "net-broadcast", "on-demand", "local-broadcast"
+    artist: "",
+    album: "",
+    albumArt: "",
+    trackPos: 0,
+    trackLen: 0,
+    trackTitle: "",
+    trackSubTitle: "",
+    bitRate: 0,
+    bitDepth: 0,
+    sampleRate: 0
+};
+
+const defaultDeviceInfo = {
+    model: "",
+    group: "", name: "",
+    datetime: {},
+    address: "",
+    volume: 0,
+    mute: false
+};
+
+let deviceInfo = {
+    isActive: false,
+    stream: defaultStreamInfo,
+    device: defaultDeviceInfo
+};
+
 const getDate = () => {
     const date = new Date();
     return date.toUTCString();
 }
 
-/**
- * This function provides the current date and time in Unix epoch format.
- * @returns {number} The date in Unix epoch format.
- */
 const getTimeStamp = () => {
     return Date.now();
 }
 
-/**
- * This function provides the current OS environment information.
- * @returns {object} The object containing the OS information.
- */
 const getOS = () => {
-    log("os", "Get OS capabilities");
+    console.console.log("os", "Get OS capabilities");
     return {
         "arch": os.arch(),
         "hostname": os.hostname(),
@@ -50,35 +59,46 @@ const getOS = () => {
     };
 }
 
+const getDeviceInfo = () => {
+    return deviceInfo;
+}
+
+const resetDeviceInfo = () => {
+    deviceInfo.isActive = false;
+    deviceInfo.stream = defaultStreamInfo;
+    deviceInfo.device = defaultDeviceInfo;
+}
+
+const getSettings = () => {
+    return settings;
+}
+
 const loadSettings = () => {
     try {
-        let settings = fs.readFileSync(settingsFile);
-        settings = JSON.parse(settings);
+        settings = JSON.parse(fs.readFileSync(settingsFile));
         if (!settings["streamer-device"] || !settings["streamer-device"]["address"]) {
             throw "Missing streamer device address!";
         }
-        if (!settings["display-server"] || !settings["display-server"]["address"]) {
+        if (!settings["display-server"] || !settings["display-server"]["web-address"]) {
             settings["display-server"] = {};
-            settings["display-server"]["address"] = "127.0.0.1";
+            settings["display-server"]["web-address"] = "127.0.0.1";
         }
-        if (!settings["display-server"] || !settings["display-server"]["port"]) {
-            settings["display-server"]["port"] = 8080;
+        if (!settings["display-server"] || !settings["display-server"]["web-port"]) {
+            settings["display-server"]["web-port"] = 8080;
         }
         return settings;
     }
     catch {
-        Console.console.log("Srv", "No settings file found or invalid values detected!");
-        Console.console.log("Srv", "Please check the settings.json file in the root folder!");
+        console.log("Settings", "No settings file found or invalid values detected!");
+        console.log("Settings", "Please check the settings.json file in the root folder!");
         exit(1);
     }
 }
 
-jsonRPC_SetSetting = (io, params) => {
+const jsonRPC_SetSetting = (io, params) => {
     if (params && params.length === 2) {
-        log("settings", "Set setting:", params[0], " to ", params[1]);
+        console.log("RPC ", "set setting:", params[0], " to ", params[1]);
         try {
-            let settings = fs.readFileSync(settingsFile);
-            settings = JSON.parse(settings);
             var keyParts = params[0].split(".");
             var obj = settings;
             for (var i = 0; i < keyParts.length - 1; i++) {
@@ -93,18 +113,18 @@ jsonRPC_SetSetting = (io, params) => {
             io.emit("set-setting", params[0], params[1]);
             return { code: 200, content: "Setting updated successfully." };
         } catch (error) {
-            log("settings", "Error updating setting:", error);
+            console.log("RPC", "Error updating setting:", error);
             return { code: 500, content: "Error updating setting: " + error };
         }
     } else {
-        log("settings", "Invalid parameters for SetSetting:", params);
+        console.log("RPC", "Invalid parameters for SetSetting:", params);
         return { code: 400, content: "Invalid parameters for SetSetting." };
     }
 }
 
-jsonRPC_GetSetting = (io, params) => {
+const jsonRPC_GetSetting = (io, params) => {
     if (params && params.length === 1) {
-        log("settings", "Get setting:", params[0]);
+        console.log("RPC", "get setting:", params[0]);
         try {
             let settings = fs.readFileSync(settingsFile);
             let setting = JSON.parse(settings);
@@ -118,23 +138,23 @@ jsonRPC_GetSetting = (io, params) => {
             let key = keyParts[keyParts.length - 1];
             return { code: 200, content: setting[key] };
         } catch (error) {
-            log("settings", "Error getting setting:", error);
+            console.log("RPC", "Error getting setting:", error);
             return { code: 500, content: "Error getting setting: " + error };
         }
     }
     else {
-        log("settings", "Invalid parameters for GetSetting:", params);
+        console.log("RPC", "Invalid parameters for GetSetting:", params);
         return { code: 400, content: "Invalid parameters for GetSetting." };
     }
 }
 
-jsonRPC_SelectPage = (io, params) => {
+const jsonRPC_SelectPage = (io, params) => {
     if (params && params.length === 1) {
-        log("settings", "Select page:", params[0]);
+        console.log("RPC", "Select page:", params[0]);
         io.emit("select-page", params[0]);
         return { code: 200, content: "Page selection request '" + params[0] + "' sent." };
     } else {
-        log("settings", "Invalid parameters for SelectPage:", params);
+        console.log("RPC", "Invalid parameters for SelectPage:", params);
     }
 }
 
@@ -142,6 +162,9 @@ module.exports = {
     getDate,
     getTimeStamp,
     getOS,
+    getDeviceInfo,
+    resetDeviceInfo,
+    getSettings,
     loadSettings,
     jsonRPC_SetSetting,
     jsonRPC_GetSetting,

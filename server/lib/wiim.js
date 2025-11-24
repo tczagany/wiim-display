@@ -1,176 +1,299 @@
-// ===========================================================================
-// wiim.js
-
-/**
- * WIIM api functionality module - ASYNC!!!
- *
- * @module
- */
-
 const https = require("https");
 const xml2js = require("xml2js");
 const lib = require("./lib.js");
 const log = require("debug")("lib:wiimapi");
 
+var prevTrackUniqueId = "";
+var prevAlbumName = "";
+var deviceInfoChanged = undefined;
+var streamInfoChanged = undefined;
+var albumChanged = undefined;
+var trackChanged = undefined;
+var deviceActivated = undefined;
+var deviceDeactivated = undefined;
+var progressChanged = undefined;
+
+function changeDeviceState(state) {
+    let device = lib.getDeviceInfo();
+    if (device.isActive && state == false) {
+        device.isActive = false;
+        console.log("device is inactive");
+        if (deviceDeactivated !== undefined)
+            deviceDeactivated();
+    }
+    else if (!device.isActive && state == true) {
+        device.isActive = true;
+        console.log("device is active");
+        if (deviceActivated !== undefined)
+            deviceActivated();
+    }
+}
+
 function getJsonFromHttps(url, callback) {
-  https.get(url, { rejectUnauthorized: false }, (res) => {
-    let data = '';
-    res.on('data', (chunk) => {
-      data += chunk;
+    var timeoutId = undefined;
+    var req = https.get(url, { rejectUnauthorized: false }, (res) => {
+        let jsonString = '';
+        res.on('data', (chunk) => {
+            jsonString += chunk;
+        });
+        res.on('end', () => {
+            clearTimeout(timeoutId);
+            try {
+                changeDeviceState(true);
+                callback(null, jsonString);
+            } catch (error) {
+                callback(error, null);
+                changeDeviceState(false);
+            }
+        });
     });
-    res.on('end', () => {
-      try {
-        const jsonString = data;
-        callback(null, jsonString);
-      } catch (error) {
+    req.on('error', (error) => {
+        clearTimeout(timeoutId);
         callback(error, null);
-      }
+        changeDeviceState(false);
     });
-    res.on('error', (error) => {
-      callback(error, null);
-    });
-  }).on('error', (error) => {
-    callback(error, null);
-  });
-}
-
-function msToTime(duration) {
-    var milliseconds = Math.floor((duration % 1000) / 100),
-        seconds = Math.floor((duration / 1000) % 60),
-        minutes = Math.floor((duration / (1000 * 60)) % 60),
-        hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-    hours = (hours < 10) ? "0" + hours : hours;
-    minutes = (minutes < 10) ? "0" + minutes : minutes;
-    seconds = (seconds < 10) ? "0" + seconds : seconds;
-    return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
-}
-
-/**
- * This function starts the polling for the selected device state.
- * @param {object} io - The Socket.IO object to emit to clients.
- * @param {object} deviceInfo - The device info object.
- * @returns {interval} Interval reference.
- */
-const startState = (io, deviceInfo) => {
-    log("Start polling for device state...");
-    // Start immediately with polling device for state
-    module.exports.updateDeviceState(io, deviceInfo);
-    // Then set an interval to poll the device state regularly
-    return setInterval(() => {
-        module.exports.updateDeviceState(io, deviceInfo);
+    timeoutId = setTimeout(() => {
+        req.destroy();
     }, 1000);
 }
 
-/**
- * This function starts the polling for the selected device metadata.
- * @param {object} io - The Socket.IO object to emit to clients.
- * @param {object} deviceInfo - The device info object.
- * @returns {interval} Interval reference.
- */
-const startMetadata = (io, deviceInfo) => {
-    log("Start polling for device metadata...");
-    // Start immediately with polling device for metadata
-    module.exports.updateDeviceMetadata(io, deviceInfo);
-    // Then set an interval to poll the device metadata regularly
-    return setInterval(() => {
-        module.exports.updateDeviceMetadata(io, deviceInfo);
-    }, 4000);
+function strValueFilter(str) {
+    if (str === 'unknow' || str === 'unknown'  || str === 'un_known')
+        return '';
+    return str;
 }
 
-/**
- * This function stops the polling of the selected device, given the interval.
- * @param {interval} interval - The set interval reference.
- * @param {string} name - The set interval name, for logging purposes only.
- * @returns {undefined}
- */
+function numValueFilter(str) {
+    var value = parseInt(str, 10);
+    if (isNaN(value)) 
+        return 0;
+    return value;
+}
+
+const startDeviceStatePolling = () => {
+    log("Start polling for device state...");
+    module.exports.updateDeviceState();
+    return setInterval(() => {
+        module.exports.updateDeviceState();
+    }, 10000);
+}
+
+const startStreamStatePolling = () => {
+    log("Start polling for stream state...");
+    module.exports.updateStreamState();
+    return setInterval(() => {
+        module.exports.updateStreamState();
+    }, 1000);
+}
+
 const stopPolling = (interval, name) => {
     log("Stop polling:", name);
     clearInterval(interval);
 }
 
-/**
- * This function fetches the current device state (GetTransportInfo).
- * @param {object} io - The Socket.IO object to emit to clients.
- * @param {object} deviceInfo - The device info object.
- * @returns {interval} Interval reference.
- */
-const updateDeviceState = (io, deviceInfo) => {
-    const urlStatus = 'https://192.168.1.3/httpapi.asp?command=getPlayerStatus';
-    var jsonStatus = '';
+const updateDeviceState = () => {
+    const address = lib.getSettings()["streamer-device"]["address"];
+    const urlStatus = 'https://' + address + '/httpapi.asp?command=getStatusEx';
     getJsonFromHttps(urlStatus, (error, res) => {
-        if (error) return;
-        if (deviceInfo.state === null) {
-            deviceInfo.state = {
-                CurrentTransportState: "",
-                RelTime: 0, TrackDuration: 0
-            };
+        if (error)
+            return;
+        let device = lib.getDeviceInfo().device;
+        let json = JSON.parse(res);
+        device.name = json['DeviceName'];
+        device.group = json['GroupName'];
+        if (json['project'].match(/.*(plus|Plus).*/))
+            device.model = "WIIM Pro Plus";
+        else if (json['project'].match(/.*(mini|Mini).*/))
+            device.model = "WIIM Mini";
+        else
+            device.model = "WIIM Pro";
+        device.address = json['eth0'];
+        const regexDateMatch = '^([0-9]{4})\:([0-9]{1,2})\:([0-9]{1,2})\ ([0-9]{2})\:([0-9]{2})\:([0-9]{2})$';
+        let match;
+        let datetime = json['date'] + ' ' + json['time'];
+        if(match = datetime.match(regexDateMatch)) {
+            const [year, month, day, hours, minutes, seconds] = match.slice(1, 7).map(x => parseInt(x));
+            device.datetime = new Date(year, month, day, hours, minutes, seconds);
         }
-        jsonStatus = JSON.parse(res);
-        if (jsonStatus['status'] == "play")
-            deviceInfo.metadata.CurrentTransportState = "PLAYING";
-        else if (jsonStatus['status'] == "stop")
-            deviceInfo.metadata.CurrentTransportState = "STOPPED";
-        else if (jsonStatus['status'] == "pause")
-            deviceInfo.metadata.CurrentTransportState = "PAUSED_PLAYBACK";
-        else if (jsonStatus['status'] == "loading")
-            deviceInfo.metadata.CurrentTransportState = "TRANSITIONING";
-        deviceInfo.state.CurrentTransportState = deviceInfo.metadata.CurrentTransportState;
-        deviceInfo.state.RelTime = msToTime(jsonStatus['curpos']);
-        deviceInfo.state.TrackDuration = msToTime(jsonStatus['totlen']);
-        deviceInfo.metadata.TrackSource = jsonStatus['vendor'];
-        deviceInfo.metadata.CurrentVolume = jsonStatus['vol'];
-        io.emit("state", deviceInfo.state);
+        else
+            device.datetime = Date.now();
     });
+    if (deviceInfoChanged !== undefined)
+        deviceInfoChanged();
 }
 
-/**
- * This function fetches the current device metadate (GetInfoEx or GetPositionInfo).
- * @param {object} io - The Socket.IO object to emit to clients.
- * @param {object} deviceInfo - The device info object.
- * @returns {interval} Interval reference.
- */
-const updateDeviceMetadata = (io, deviceInfo) => {
-    const urlInfo = 'https://192.168.1.3/httpapi.asp?command=getMetaInfo';
-    var jsonInfo = '';
+function updateTrackProgress(json) {
+    var trackPos = parseInt(json['curpos']);
+    var trackLen = parseInt(json['totlen']);
+    if (trackPos < 0)
+        trackPos = 0;
+    if (trackPos > trackLen)
+        trackPos = trackLen
+    let stream = lib.getDeviceInfo().stream;
+    var changed = trackPos != stream.trackPos || trackLen != stream.trackLen;
+    stream.trackPos = trackPos;
+    stream.trackLen = trackLen;
+    if (changed)
+        progressChanged();
+}
+
+function updateStreamInfo(json) {
+    let stream = lib.getDeviceInfo().stream;
+    var prevSource = stream.source;
+    var prevVendor = stream.vendor;
+    var prevState = stream.state;
+    switch(json['mode']) {
+        case '10':
+        case '31':
+        case '32':
+            stream.source = "network";
+            break;
+        case '40':
+            stream.trackLen = 0;
+            stream.trackPos = 0;
+            stream.source = "linein";
+            stream.vendorCategory = "local-broadcast";
+            break;
+        case '42':
+            stream.trackLen = 0;
+            stream.trackPos = 0;
+            stream.source = "bt";
+            stream.vendorCategory = "local-broadcast";
+            break;
+        case '43':
+            stream.trackLen = 0;
+            stream.trackPos = 0;
+            stream.source = "optin";
+            stream.vendorCategory = "local-broadcast";
+            break;
+        default:
+            stream.source = "";
+    }
+    switch(json['vendor']) {
+        case 'newTuneIn':
+            stream.trackLen = 0;
+            stream.trackPos = 0;
+            stream.vendor = "tunein";
+            stream.vendorCategory = "net-broadcast";
+            break;
+        case 'Tidal':
+            stream.vendor = "tidal";
+            stream.vendorCategory = "on-demand";
+            break;
+        default:
+            stream.vendor = json['vendor'];
+            if (json['vendor'].match(/.*spotify.*/)) {
+                stream.vendor = "spotify";
+                stream.vendorCategory = "on-demand";
+            }
+    }
+    switch(json['status']) {
+        case 'load':
+            stream.state = "loading";
+            break;
+        case 'play':
+            stream.state = "playing";
+            break;
+        case 'pause':
+            stream.state = "paused";
+            break;
+        case 'stop':
+            stream.state = "stopped";
+            break;
+        default:
+            stream.state = "";
+            console.log(json['status']);
+    }
+    if (stream.state != prevState ||
+        stream.vendor != prevVendor ||
+        stream.source != prevSource)
+    {
+        streamInfoChanged();
+    }
+}
+
+function updateVolume(json) {
+    let device = lib.getDeviceInfo().device;
+    var prevVol = device.volume;
+    var prevMute = device.mute;
+    device.volume = json['vol'];
+    device.mute = json['mute'];
+    if (deviceInfoChanged !== undefined && (
+        prevVol != device.volume ||
+        prevMute != device.mute))
+    {
+        deviceInfoChanged();
+    }
+}
+
+function updateTrackInfo(json) {
+    let stream = lib.getDeviceInfo().stream;
+    stream.artist = strValueFilter(json["metaData"]["artist"]);
+    stream.album = strValueFilter(json["metaData"]["album"]);
+    stream.albumArt = strValueFilter(json["metaData"]["albumArtURI"]);
+    stream.trackTitle = strValueFilter(json["metaData"]["title"]);
+    stream.trackSubTitle = strValueFilter(json["metaData"]["subtitle"]);
+    stream.bitRate = numValueFilter(json["metaData"]["bitRate"]);
+    stream.bitDepth = numValueFilter(json["metaData"]["bitDepth"]);
+    stream.sampleRate = numValueFilter(json["metaData"]["sampleRate"]);
+    if (prevAlbumName != stream.album) {
+        prevAlbumName = stream.album;
+        if (albumChanged !== undefined)
+            albumChanged();
+    }
+    if (prevTrackUniqueId != json["metaData"]["trackId"]) {
+        prevTrackUniqueId = json["metaData"]["trackId"];
+        if (trackChanged !== undefined)
+            trackChanged();
+    }
+}
+
+const updateStreamState = () => {
+    const address = lib.getSettings()["streamer-device"]["address"];
+    const urlStatus = 'https://' + address + '/httpapi.asp?command=getPlayerStatus';
+    getJsonFromHttps(urlStatus, (error, res) => {
+        if (error)
+            return;
+        let json = JSON.parse(res);
+
+        updateVolume(json);
+        updateTrackProgress(json);
+        updateStreamInfo(json);
+    });
+
+    const urlInfo = 'https://' + address + '/httpapi.asp?command=getMetaInfo';
     getJsonFromHttps(urlInfo, (error, res) => {
-        if (error) return;
-        jsonInfo = JSON.parse(res);
-        if (deviceInfo.metadata === null) {
-            deviceInfo.metadata = {
-                PlayMedium: "SONGLIST-NETWORK",
-                PlayMedia: "SONGLIST-NETWORK",
-                TimeStamp: lib.getTimeStamp(),
-                CurrentTransportState: "",
-                Artist: "", Album: "", Title: "", AlbumCoverURI: "",
-                TrackSource: "", BitDepth: 0, SampleRate: 0
-            };
-        }
-        deviceInfo.metadata.Artist = jsonInfo['metaData']['artist'];
-        deviceInfo.metadata.Album = jsonInfo['metaData']['album'];
-        deviceInfo.metadata.Title = jsonInfo['metaData']['title'];
-        deviceInfo.metadata.AlbumCoverURI = jsonInfo['metaData']['albumArtURI'];
-        deviceInfo.metadata.SampleRate = jsonInfo['metaData']['sampleRate'];
-        deviceInfo.metadata.BitDepth = jsonInfo['metaData']['bitDepth'];
-        io.emit("metadata", deviceInfo.metadata);
+        if (error)
+            return;
+        let json = JSON.parse(res);
+
+        updateTrackInfo(json,);
     });
 }
 
-/**
- * This function calls an action to perform on the device renderer.
- * E.g. "Next","Pause","Play","Previous","Seek".
- * See the selected device actions to see what the renderer is capable of.
- * @param {string} action - The AVTransport action to perform.
- * @returns {object} The restulting object of the action (or null).
- */
-const callDeviceAction = (io, action, deviceInfo) => {
+const callDeviceAction = (io, action) => {
     log("callDeviceAction()", action);
 }
 
 module.exports = {
-    startState,
-    startMetadata,
+    onDeviceActivated:
+        function(handler) { deviceActivated = handler; },
+    onDeviceDeactivated:
+        function(handler) { deviceDeactivated = handler; },
+    onDeviceInfoChanged:
+        function(handler) { deviceInfoChanged = handler; },
+    onStreamInfoChanged:
+        function(handler) { streamInfoChanged = handler; },
+    onAlbumChanged:
+        function(handler) { albumChanged = handler; },
+    onTrackChanged:
+        function(handler) { trackChanged = handler; },
+    onTrackProgressChanged:
+        function(handler) { progressChanged = handler; },
+    startDeviceStatePolling,
+    startStreamStatePolling,
     stopPolling,
     updateDeviceState,
-    updateDeviceMetadata,
+    updateStreamState,
     callDeviceAction
 };

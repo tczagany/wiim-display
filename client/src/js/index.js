@@ -24,17 +24,21 @@ App.toogleIframe = function(newContent) {
 }
 
 App.init = function() {
-  setTimeout(function() {
-      App.toogleIframe('/wiimd.html');
-  }, 2000);
+    console.log("WIIM App", "Initialising...");
 
-  setInterval(function() {
-    if (App.activeFrame == 'a') {
-        App.toogleIframe('/clock.html');
-    } else {
-        App.toogleIframe('/wiimd.html');
-    }
-  }, 5000);
+    console.log("WIIM App", "Listening on " + location.hostname + ":" + location.port)
+    window.socket = io(location.hostname + ":" + location.port);
+    console.log("WIIM App", window.socket);
+
+    socket.on("select-page", function (msg) {
+        console.log("WIIM App", "Select page command received:", msg);
+        App.toogleIframe('/' + msg);
+    });
+
+    socket.on("settings", function (msg) {
+        console.log("WIIM App", "Settings received:", msg);
+        window.serverSettings = msg;
+    });
 }
 
 App.init();

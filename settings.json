@@ -5,8 +5,12 @@
         "address": "192.168.1.3"
     },
     "display-server": {
-        "address": "127.0.0.1",
-        "port": 8080
+        "web-address": "127.0.0.1",
+        "web-port": 8080,
+        "ctrl-address": "127.0.0.1",
+        "ctrl-port": 8081,
+        "default-inactive-page": "clock.html",
+        "default-active-page": "wiimd.html"
     },
     "display-client": {
         "refresh-interval-ms": 1000,

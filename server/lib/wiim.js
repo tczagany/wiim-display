@@ -12,20 +12,36 @@ var trackChanged = undefined;
 var deviceActivated = undefined;
 var deviceDeactivated = undefined;
 var progressChanged = undefined;
+var activationTimer = undefined;
 
 function changeDeviceState(state) {
     let device = lib.getDeviceInfo();
-    if (device.isActive && state == false) {
-        device.isActive = false;
-        console.log("device is inactive");
-        if (deviceDeactivated !== undefined)
-            deviceDeactivated();
+    if (state === false) {
+        if (activationTimer !== undefined) {
+            console.log("multiple device inactivation");
+            clearTimeout(activationTimer);
+            activationTimer = undefined;
+        }
+        else if (device.isActive) {
+            device.isActive = false;
+            console.log("device is inactive");
+            if (deviceDeactivated !== undefined)
+                deviceDeactivated();
+        }
     }
-    else if (!device.isActive && state == true) {
-        device.isActive = true;
-        console.log("device is active");
-        if (deviceActivated !== undefined)
-            deviceActivated();
+    else if (state == true) {
+        if (activationTimer !== undefined) {
+            console.log("multiple device activation");
+        }
+        else if (!device.isActive) {
+            console.log("device activation");
+            activationTimer = setTimeout(() => {
+                activationTimer = undefined;
+                device.isActive = true;
+                console.log("device is active");
+                deviceActivated();
+            }, 3000);
+        }
     }
 }
 
@@ -130,7 +146,7 @@ function updateTrackProgress(json) {
     if (trackPos > trackLen)
         trackPos = trackLen
     let stream = lib.getDeviceInfo().stream;
-    var changed = trackPos != stream.trackPos || trackLen != stream.trackLen;
+    var changed = trackPos !== stream.trackPos;
     stream.trackPos = trackPos;
     stream.trackLen = trackLen;
     if (changed)
@@ -154,7 +170,7 @@ function updateStreamInfo(json) {
             stream.source = "linein";
             stream.vendorCategory = "local-broadcast";
             break;
-        case '42':
+        case '41':
             stream.trackLen = 0;
             stream.trackPos = 0;
             stream.source = "bt";
@@ -267,7 +283,7 @@ const updateStreamState = () => {
             return;
         let json = JSON.parse(res);
 
-        updateTrackInfo(json,);
+        updateTrackInfo(json);
     });
 }
 

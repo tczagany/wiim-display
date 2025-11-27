@@ -1,4 +1,3 @@
-// Namespacing
 window.App = window.App || {};
 
 App.activeFrame = 'a';

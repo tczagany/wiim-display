@@ -90,18 +90,23 @@ io.on("connection", (socket) => {
         });
         wiimAPI.onDeviceInfoChanged(() => {
             io.emit("device-state", lib.getDeviceInfo().device);
+            //console.log("DEVICE INFO CHANGED", lib.getDeviceInfo());
         });
         wiimAPI.onStreamInfoChanged(() => {
             io.emit("stream-state", lib.getDeviceInfo().stream);
+            //console.log("STREAM INFO CHANGED", lib.getDeviceInfo());
         });
         wiimAPI.onAlbumChanged(() => {
             io.emit("album-changed", lib.getDeviceInfo().stream);
+            //console.log("ALBUM CHANGED", lib.getDeviceInfo());
         });
         wiimAPI.onTrackChanged(() => {
             io.emit("track-changed", lib.getDeviceInfo().stream);
+            //console.log("TRACK CHANGED", lib.getDeviceInfo());
         });
         wiimAPI.onTrackProgressChanged(() => {
             io.emit("track-progress", lib.getDeviceInfo().stream);
+            //console.log("PROGRESS CHANGED", lib.getDeviceInfo());
         });
         pollDeviceInfo = wiimAPI.startDeviceStatePolling();
         pollStreamInfo = wiimAPI.startStreamStatePolling();
@@ -126,6 +131,14 @@ io.on("connection", (socket) => {
     socket.on("device-action", (msg) => {
         console.log("device-action", msg);
         wiimAPI.callDeviceAction(io, msg);
+    });
+
+    socket.on("update-request", (msg) => {
+        console.log("update request from browser");
+        io.emit("device-state", lib.getDeviceInfo().device);
+        io.emit("stream-state", lib.getDeviceInfo().stream);
+        io.emit("album-changed", lib.getDeviceInfo().stream);
+        io.emit("track-changed", lib.getDeviceInfo().stream);
     });
 });
 

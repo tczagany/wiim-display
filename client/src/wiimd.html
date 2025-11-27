@@ -31,16 +31,24 @@
                 <h3 id="mediaArtist">{ARTIST}</h3>
                 <h4 class="mb-2"><span id="mediaAlbum">{ALBUM TITLE}</span></h4>
                 <h4 class="mb-2"><span id="mediaSubTitle" class="text-secondary">{SUBTITLE}</span></h4>
-                <div id="mediaQuality" class="text-secondary mb-1"><span id="mediaQualityIdent"
-                        class="badge badge-outlined"><i class="bi bi-soundwave"></i></span><span id="mediaBitRate">{xxx
-                        kbps}/</span><span id="mediaBitDepth">{yy
-                        bits}/</span><span id="mediaSampleRate">{zz,z kHz}</span></div>
+                <div id="mediaQuality" class="text-secondary mb-1">
+                    <span id="mediaQualityIdent" class="badge badge-outlined">
+                        <i class="bi bi-soundwave"></i>
+                    </span><span id="mediaBitRate">
+                        {xxxkbps}
+                    </span>
+                    <span id="mediaBitDepth">
+                        {yybits}
+                    </span>
+                    <span id="mediaSampleRate">
+                        {zz,z kHz}
+                    </span>
+                </div>
             </div>
 
             <div class="wiimdAlbumArt">
                 <div class="rounded">
-                    <img id="albumArt" class="rounded" src="img/fake-album-1.jpg"
-                        onerror="WIIMD.setAlbumArt(WIIMD.s.rndAlbumArtUri)" alt="Album art">
+                    <img id="albumArt" class="rounded" src="img/album-unknown.jpg" alt="Album art">
                 </div>
             </div>
 

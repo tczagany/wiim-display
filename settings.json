@@ -8,19 +8,19 @@
         "web-address": "192.168.1.3",
         "web-port": 8080,
         "default-inactive-page": "clock.html",
-        "default-inactive-page-brightness": [
-            {
-                "07:00:00": "10%",
-                "11:00:00": "20%",
-                "19:00:00": "10%",
-                "22:00:00": "5%"
-            }
-        ],
-        "default-active-page": "wiimd.html"
+        "default-inactive-page-brightness": {
+            "06:30:00": 0.1,
+            "11:00:00": 0.2,
+            "19:00:00": 0.1,
+            "22:00:00": 0.05
+        },
+        "default-active-page": "wiimd.html",
+        "current-brightness": 0.19999999999999998
     },
     "display-client": {
         "display-brightness": 0.9,
         "refresh-interval-ms": 1000,
-        "display-margin": 0.1
+        "display-margin-w": 0.01,
+        "display-margin-h": 0.1
     }
 }

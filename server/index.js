@@ -10,6 +10,7 @@ const wiimAPI = require("./lib/wiim.js");
 
 let pollStreamInfo = null;
 let pollDeviceInfo = null;
+let lastBrightness = null;
 
 lib.loadSettings();
 lib.resetDeviceInfo();
@@ -65,12 +66,31 @@ function updateDefaultPage() {
         if (page !== undefined && page !== '')
             lib["jsonRPC_SelectPage"](io, [page]);
         io.emit("device-activated", lib.getDeviceInfo());
+        var brightness = lib.getSettings()["display-client"]["display-brightness"];
+        io.emit("set-setting", "display-client.display-brightness", brightness);
     }
     else {
         var page = lib.getSettings()["display-server"]["default-inactive-page"];
         io.emit("device-deactivated", lib.getDeviceInfo().device);
         if (page !== undefined && page !== '')
             lib["jsonRPC_SelectPage"](io, [page]);
+        io.emit("set-setting", "display-client.display-brightness", lastBrightness);
+    }
+}
+
+function brightnessLevelScheduler(brightnessLevels) {
+    let now = new Date();
+    let nowStr = now.toTimeString().split(" ")[0];
+    let brightness = null;
+    let levels = Object.entries(brightnessLevels).map(( [k, v] ) => ({ [k]: v }));
+    for (let i = 0; i < levels.length; i++) {
+        if (nowStr >= Object.keys(levels[i])[0])
+            brightness = Object.values(levels[i])[0];
+    }
+    if (brightness !== null && brightness !== lastBrightness) {
+        lastBrightness = brightness;
+        if (!lib.getDeviceInfo().isActive)
+            io.emit("set-setting", "display-client.display-brightness", lastBrightness);
     }
 }
 
@@ -150,3 +170,9 @@ server.listen(wport, waddress, () => {
         server.address().address, server.address().port);
     }
 );
+let brightnessLevels = lib.getSettings()["display-server"]["default-inactive-page-brightness"];
+if (brightnessLevels !== undefined) {
+    setInterval(() => {
+        brightnessLevelScheduler(brightnessLevels);
+    }, 3000);
+}

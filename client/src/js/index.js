@@ -9,13 +9,16 @@ App.setBrightness = function(value) {
     console.log("WIIM App", "brightness set to: ", frame.style.opacity);
 };
 
-App.setMargin = function(value) {
+App.setMargin = function(mx, my) {
     var body = undefined;
     body = document.getElementById('body');
-    body.style.width = (1 - value * 2) * 100 + "vw";
-    body.style.height = (1 - value * 2) * 100 + "vh";
-    body.style.margin = value * 100 + "vh auto";
-    console.log("WIIM App", "margin set to: ", value * 100 + "vw / " + value * 100 + "vh");
+    if (mx != 0)
+        body.style.width = (1 - mx * 2) * 100 + "vw";
+    if (my != 0) {
+        body.style.height = (1 - my * 2) * 100 + "vh";
+        body.style.margin = my * 100 + "vh auto";
+    }
+    console.log("WIIM App", "margin set to: ", mx * 100 + "vw / " + my * 100 + "vh");
 };
 
 App.toogleIframe = function(newContent) {
@@ -60,9 +63,13 @@ App.init = function() {
                 App.setBrightness(msg['display-client']['display-brightness']);
             }
             if (msg['display-client'] != undefined &&
-                msg['display-client']['display-margin'] != undefined)
+                msg['display-client']['display-margin-w'] != undefined &&
+                msg['display-client']['display-margin-h'] != undefined)
             {
-                App.setMargin(msg['display-client']['display-margin']);
+                App.setMargin(
+                    msg['display-client']['display-margin-w'],
+                    msg['display-client']['display-margin-h']
+                );
             }
         }
         catch {
@@ -73,8 +80,10 @@ App.init = function() {
     socket.on("set-setting", function (param, value) {
         if (param == "display-client.display-brightness")
             App.setBrightness(value);
-        if (param == "display-client.display-margin")
-            App.setMargin(value);
+        if (param == "display-client.display-margin-w")
+            App.setMargin(value, 0);
+        if (param == "display-client.display-margin-h")
+            App.setMargin(0, value);
     });
 }
 

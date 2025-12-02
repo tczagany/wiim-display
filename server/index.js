@@ -79,6 +79,7 @@ io.on("connection", (socket) => {
     console.log("No. of sockets:", io.sockets.sockets.size);
 
     socket.emit("settings", lib.getSettings());
+
     if (io.sockets.sockets.size === 1) {
         lib.resetDeviceInfo();
         updateDefaultPage();

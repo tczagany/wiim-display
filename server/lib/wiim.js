@@ -56,7 +56,12 @@ function getJsonFromHttps(url, callback) {
             clearTimeout(timeoutId);
             try {
                 changeDeviceState(true);
-                callback(null, jsonString);
+                try {
+                    JSON.parse(jsonString);
+                    callback(null, jsonString);
+                } catch (e) {
+                    callback(jsonString, null);
+                }
             } catch (error) {
                 callback(error, null);
                 changeDeviceState(false);

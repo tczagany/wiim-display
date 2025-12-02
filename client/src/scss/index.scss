@@ -6,20 +6,20 @@ html {
 }
 
 body {
-    width: 90%;
-    height: 80%;
-    margin-top: 5%;
-    margin-left: 5%;
-    background-color: black;
-    box-sizing: border-box;
-    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+    width: 90vw;
+    margin: 5vh auto;
 }
 
-.frame-view {
+.frame-view-class {
     height: 100%;
     width: 100%;
     display: grid;
     grid-template-columns: 1fr;
+    opacity: 1;
 }
 
 .content-frame {

@@ -1,2 +1,0 @@
-html{background-color:#000;height:100vh;margin:0;padding:0}body{box-sizing:border-box;background-color:#000;width:90%;height:80%;margin-top:5%;margin-left:5%;overflow:auto}.frame-view{grid-template-columns:1fr;width:100%;height:100%;display:grid}.content-frame{opacity:0;border:none;grid-row-start:1;grid-column-start:1;width:100%;height:100%;transition:opacity 1.5s ease-in-out}
-/*# sourceMappingURL=client.8d47c5cf.css.map */

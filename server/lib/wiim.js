@@ -75,7 +75,7 @@ function getJsonFromHttps(url, callback) {
     });
     timeoutId = setTimeout(() => {
         req.destroy();
-    }, 1000);
+    }, lib.getSettings()["display-server"]["device-timeout-ms"]);
 }
 
 function strValueFilter(str) {
@@ -116,9 +116,12 @@ const updateDeviceState = () => {
     const address = lib.getSettings()["streamer-device"]["address"];
     const urlStatus = 'https://' + address + '/httpapi.asp?command=getStatusEx';
     getJsonFromHttps(urlStatus, (error, res) => {
-        if (error)
-            return;
         let device = lib.getDeviceInfo().device;
+        if (error) {
+            lib.getDeviceInfo().lastError = error.toString();
+            lib.getDeviceInfo().errorCount += 1;
+            return;
+        }
         let json = JSON.parse(res);
         device.name = json['DeviceName'];
         device.group = json['GroupName'];
@@ -138,6 +141,8 @@ const updateDeviceState = () => {
         }
         else
             device.datetime = Date.now();
+        lib.getDeviceInfo().successCount += 1;
+        lib.getDeviceInfo().lastError = "";
     });
     if (deviceInfoChanged !== undefined)
         deviceInfoChanged();
@@ -273,22 +278,32 @@ const updateStreamState = () => {
     const address = lib.getSettings()["streamer-device"]["address"];
     const urlStatus = 'https://' + address + '/httpapi.asp?command=getPlayerStatus';
     getJsonFromHttps(urlStatus, (error, res) => {
-        if (error)
+        let device = lib.getDeviceInfo();
+        if (error) {
+            device.errorCount += 1;
+            device.lastError = error.toString();
             return;
+        }
         let json = JSON.parse(res);
-
         updateVolume(json);
         updateTrackProgress(json);
         updateStreamInfo(json);
+        device.successCount += 1;
+        device.lastError = "";
     });
 
     const urlInfo = 'https://' + address + '/httpapi.asp?command=getMetaInfo';
     getJsonFromHttps(urlInfo, (error, res) => {
-        if (error)
+        let device = lib.getDeviceInfo();
+        if (error) {
+            device.errorCount += 1;
+            device.lastError = error.toString();
             return;
+        }
         let json = JSON.parse(res);
-
         updateTrackInfo(json);
+        device.successCount += 1;
+        device.lastError = "";
     });
 }
 

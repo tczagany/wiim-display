@@ -15,7 +15,8 @@
             "22:00:00": 0.05
         },
         "default-active-page": "wiimd.html",
-        "current-brightness": 0.19999999999999998
+        "device-refresh-ms": 1000,
+        "device-timeout-ms": 10000
     },
     "display-client": {
         "display-brightness": 0.9,

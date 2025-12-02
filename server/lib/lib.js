@@ -32,6 +32,9 @@ const defaultDeviceInfo = {
 
 let deviceInfo = {
     isActive: false,
+    successCount: 0,
+    errorCount: 0,
+    lastError: "",
     stream: defaultStreamInfo,
     device: defaultDeviceInfo
 };

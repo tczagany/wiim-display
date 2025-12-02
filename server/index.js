@@ -37,6 +37,10 @@ app.get("/proxy", function (req, res) {
     });
 });
 
+app.get("/device", function (req, res) {
+    res.send(lib.getDeviceInfo(), 200);
+});
+
 app.get("/jsonrpc", function (req, res) {
     if (req.query["json"] !== undefined) {
         let jsonObj = JSON.parse(req.query["json"].replaceAll("'", "\""));
